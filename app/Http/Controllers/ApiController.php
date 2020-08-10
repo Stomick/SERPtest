@@ -15,7 +15,7 @@ class ApiController extends Controller
     function __construct()
     {
         try {
-            $this->respClient = new RestClient('https://api.dataforseo.com/', null, 'challenger16@rankactive.info', 'Pt82h5yFh35tjF23fgF25');
+            $this->respClient = new RestClient('https://api.dataforseo.com/', null, config('app.ba_user'), config('app.ba_user'));
         } catch (RestClientException $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
@@ -24,10 +24,8 @@ class ApiController extends Controller
 
     public function getAllTasks()
     {
-
         try {
             return response()->json(UserRequest::all());
-            //get tasks one by one
         } catch (RestClientException $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
@@ -38,9 +36,11 @@ class ApiController extends Controller
     {
         $body = $request->post('Req');
         $my_unq_id = mt_rand(0, 30000000); //your unique ID. we will return it with all results. you can set your database ID, string, etc.
+
         $post_array[$my_unq_id] = [
             "se_language" => "English"
         ];
+
         if (is_array($body) || key_exists('keyword', $body) || key_exists('region', $body) || key_exists('search', $body)) {
             foreach ($body as $k => $v) {
                 if ($v == null) {
@@ -69,7 +69,6 @@ class ApiController extends Controller
                     $reqv->save();
                 }
                 return response()->json(['success' => 'ok', $result]);
-                //do something with post results
             } catch (RestClientException $e) {
                 return response()->json(['error' => $e->getMessage()]);
             }
@@ -80,10 +79,13 @@ class ApiController extends Controller
     public function getRequestInfo(Request $request)
     {
         $get = $request->query();
+
         if ($get['id'] && $get['req_id']) {
             $serp_result = $this->respClient->get('v2/srp_tasks_get/' . $get['id']);
+
             if ($serp_result['status'] == 'ok' && isset($serp_result['results']['organic'])) {
                 Tasks::query()->where('req_id', '=', $get['req_id'])->delete();
+
                 foreach ($serp_result['results']['organic'] as $k => $v) {
                     $task = new Tasks();
                     $task->fill($v);
@@ -103,7 +105,7 @@ class ApiController extends Controller
     public function getTaskInfo(Request $request)
     {
         if ($get = $request->get('id')) {
-                return response()->json(Tasks::query()->where('task_id', '=', $get)->get());
+            return response()->json(Tasks::query()->where('task_id', '=', $get)->get());
         }
         return response()->json(['error' => 'Not set id task']);
     }

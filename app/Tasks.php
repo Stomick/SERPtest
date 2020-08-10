@@ -23,6 +23,9 @@ class Tasks extends Model
         'updated_at',
     ];
 
+    //Обновление выполненый задач
+    //Можно было бы искать по стрингам через лайк и обновлять
+    //Но проще удалить и записать в моей ситуации
     public function updateFromArray(array $attributes = [])
     {
         foreach ($attributes as $k => $attribute){
